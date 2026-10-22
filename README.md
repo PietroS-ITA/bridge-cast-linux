@@ -1,0 +1,229 @@
+<div align="center">
+
+<img src="assets/icon.svg" width="88" alt="BridgeMix logo"/>
+
+# BridgeMix
+
+**A sleek, unofficial cross-platform controller for the Roland BRIDGE CAST audio mixer.**
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+![Linux](https://img.shields.io/badge/Linux-1793D1?logo=linux&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![GUI: PyQt6](https://img.shields.io/badge/GUI-PyQt6-41CD52?logo=qt&logoColor=white)
+
+<img src="doc/screenshots/screenshot_mixer.png" width="860" alt="BridgeMix mixer view"/>
+
+</div>
+
+---
+> **Notice on AI:** Parts of this project were developed with AI assistance. 
+> The code has been reviewed and curated by the maintainer, but you may encounter rough edges. Bug reports are welcome.
+
+
+## About
+
+Roland's official companion app is closed-source and **Windows/macOS only — there's
+no Linux build at all**. **BridgeMix** is an open-source, cross-platform alternative:
+full control of the Bridge Cast — mixes, mic FX, voice changer, game FX, output
+routing, profiles and live metering — by speaking the device's MIDI SysEx protocol.
+It's pure Python/PyQt6, so the same app runs on **Linux, Windows and macOS** with no
+custom driver: the Bridge Cast is USB-Audio-class compliant.
+
+This public Linux-first continuation began as a fork of
+[Ex0danify/BridgeMix](https://github.com/Ex0danify/BridgeMix), under the same
+GPL-3.0-or-later license. The Linux PipeWire sample-rate profile and packaging
+work are maintained in this repository.
+
+For the Linux 96 kHz investigation and the currently verified device capabilities, see
+[`doc/LINUX_96KHZ.md`](doc/LINUX_96KHZ.md).
+
+It's **Linux-first** — that's where it's built and tested, and the one platform Roland
+leaves unserved — but everything runs just as well on Windows and macOS for anyone who
+wants a free, scriptable alternative to the stock app.
+
+## Features
+
+| Area | Highlights |
+|---|---|
+| **Mixer** | Stream + Personal buses · all 7 channels (volume + mute) · Mix Mode · Mix Link · live level meters |
+| **Outputs** | Sub-Mix volume · output mutes (Stream / Sub-Mix / Phones / Line) · Output Delay · Line / USB / Sub-Mix modes |
+| **Profiles** | 5 slots — select, rename, save |
+| **Mic input** | Source (XLR / headset) · +48 V phantom · gain |
+| **Mic FX** | Low Cut · Noise Suppressor (Gate / Adaptive / Expander) · De-esser · Compressor (Legacy + Modern LA-2A) · 10-band EQ **with live spectrum analyzer** |
+| **Voice FX** | Pitch · Formant · Avatar / Sing · Reverb · 5 preset slots |
+| **Game FX** | 10-band EQ · Limiter · Virtual Surround · 5 preset slots |
+| **Chat FX** | De-esser · Compressor |
+| **Hardware** | Strip channel assignment · strip button actions · LED ring colours · HOT KEY button 1 |
+| **System** | LED brightness · phones gain · indicator type · mute display · SFX A/B volume |
+| **Linux audio** | Optional Windows-style 96 kHz app endpoints, converted to the device's 48 kHz USB transport; selectable in the AUDIO page |
+| **Tools** | Device auto-detect · JSON preset save / load · live MIDI monitor |
+| **Remote API** | Optional local REST API (read/set any parameter) · Swagger UI · for Stream Deck, OBS, scripts |
+
+### Not implemented yet
+
+| Feature | Why |
+|---|---|
+| Game EQ spectrum analyzer | The host-side SUB MIX capture is unresolved on Linux — the **Mic EQ** analyzer ships and works |
+| HOT KEY buttons 2–4 · SFX A/B trigger · Beep | SysEx addresses not yet mapped |
+| Voice Transformer extras (Robot, Megaphone, consonant mode) | Stored in preset banks; live addresses unknown |
+| Some fine Mic-FX params (NS Adaptive attack/release, a few LA-2A controls) | Addresses not yet captured |
+| Per-strip LED on/off · per-preset LED colours | Write path unknown |
+| BGM · HDMI controls (Bridge Cast X)  | Out of current scope |
+| Firmware update | Intentionally **not** supported (too risky) |
+
+## Screenshots
+
+<details>
+<summary><b>Show the rest of the app</b></summary>
+
+<br/>
+
+| Mic FX | Voice FX |
+|:---:|:---:|
+| <img src="doc/screenshots/screenshot_mic_fx.png" width="410"/> | <img src="doc/screenshots/screenshot_voice_fx.png" width="410"/> |
+| **Game FX** | **Chat FX** |
+| <img src="doc/screenshots/screenshot_game_fx.png" width="410"/> | <img src="doc/screenshots/screenshot_chat_fx.png" width="410"/> |
+| **Mic Setup** | **Output** |
+| <img src="doc/screenshots/screenshot_mic_setup.png" width="410"/> | <img src="doc/screenshots/screenshot_output.png" width="410"/> |
+| **System** | **MIDI Monitor** |
+| <img src="doc/screenshots/screenshot_system.png" width="410"/> | <img src="doc/screenshots/screenshot_midi_monitor.png" width="410"/> |
+
+</details>
+
+## Install & Run
+This software was developed on an original Roland Bridge Cast. The compatibility to the Bridge Cast X and BridgeCast ONE is not guaranteed.
+
+**Requirements:**
+
+- A **Roland Bridge Cast** (original, V2) on **FW 3.00 (115)**
+- **Python 3.11+**, or conda
+
+```bash
+git clone https://github.com/PietroS-ITA/bridge-cast-linux.git
+cd bridge-cast-linux
+./setup.sh       # Linux / macOS
+setup.bat        # Windows
+```
+
+### Package managers
+
+The public Git repository can be installed into an isolated environment with
+`pipx` or `uv`:
+
+```bash
+pipx install 'git+https://github.com/PietroS-ITA/bridge-cast-linux.git'
+uv tool install --from 'git+https://github.com/PietroS-ITA/bridge-cast-linux.git' bridgemix
+```
+
+For Arch Linux, the `bridgemix-git` PKGBUILD is in `packaging/arch/`; build it
+from a checkout with `cd packaging/arch && makepkg -si`. After the first PyPI
+release, the package can also be installed as `pipx install bridgemix`.
+
+> **macOS** uses the same `./setup.sh` — it sets up the environment and launches the
+> app fine, but doesn't add a Dock/Launchpad entry (that integration is Linux- and
+> Windows-only for now). It's the least-tested of the three platforms; reports welcome.
+
+Run from a terminal, `setup.sh` (Linux) and `setup.bat` (Windows) show a friendly menu:
+
+| Option | What it does |
+|---|---|
+| **Install & Launch** | Sets things up, adds BridgeMix to your apps/Start menu, and starts it |
+| **Launch** | Starts BridgeMix without adding a menu entry |
+| **Uninstall** | Removes the apps/Start-menu entry and Linux user audio service |
+
+Prefer flags? `--install` · `--launch` · `--uninstall` (works on both `./setup.sh` and `setup.bat`).
+
+It sets itself up automatically — a `bridgemix` conda env if you have conda, otherwise
+a self-contained Python venv (`.venv`). The first run downloads dependencies (about a
+minute); after that it's instant. Force a backend with `BRIDGEMIX_BACKEND=conda|venv`.
+
+> **New to Linux?** If your file manager asks what to do with `setup.sh`, choose
+> **“Run in Terminal”** to see the menu. Once installed, just launch BridgeMix from your
+> applications menu like any other app.
+
+## Using it
+
+1. Connect the Bridge Cast over USB.
+2. Open BridgeMix — it auto-detects the correct MIDI ports and connects to the device.
+3. Tweak away; everything applies to the device live.
+
+## Plugins
+
+The **Extras** tab is a plugin host: drop a plugin folder into the plugins
+directory (shown in the panel), hit **Rescan**, and it adds its own card. Want to
+write one? See [`doc/PLUGINS.md`](doc/PLUGINS.md). The Remote API below is itself a
+built-in plugin and doubles as a complete worked example.
+
+### Remote API (REST)
+
+An **optional** local HTTP API lets third-party tools — Stream Deck, OBS, or your
+own scripts — read and set any device parameter. It is **off by default** and
+**bound to `127.0.0.1`** (loopback only; never exposed to the network).
+
+**Enable it** in the **Extras** tab → *Remote API (REST)*: tick **Enable REST API**
+and pick a port (default `8765`). The dependencies (`fastapi`, `uvicorn`) aren't
+part of the base install — the plugin declares them, so if they're missing the
+panel shows an **Install dependencies** button that fetches them into the running
+environment.
+
+Once running, open the **interactive Swagger docs** at `http://127.0.0.1:8765/docs`
+(ReDoc at `/redoc`, raw schema at `/openapi.json`).
+
+> **Security.** The API is loopback-only and **unauthenticated** — anything that
+> can reach `127.0.0.1` can drive your mixer. To stop a web page in your browser
+> from quietly poking the local API, a built-in guard rejects requests with an
+> unexpected `Host` header (DNS-rebinding) or a cross-site `Origin` (CSRF). Local
+> tools that send neither (curl, Stream Deck) and the Swagger page itself are
+> unaffected. Treat the port as trusted-local only; don't bind it to a public
+> interface!
+
+| Method & path | Does |
+|---|---|
+| `GET /api/v1/status` | Connection status (connected, model, firmware) |
+| `GET /api/v1/parameters` | List every parameter with its range and current value |
+| `GET /api/v1/parameters/{name}` | Read one parameter |
+| `PUT /api/v1/parameters/{name}` | Set one parameter (`{"value": …}`) |
+| `GET /api/v1/state` | Flat `name → value` map of all cached values |
+
+```bash
+# Discover parameters
+curl http://127.0.0.1:8765/api/v1/parameters
+
+# Mute the stream mic channel (parameter names come from the list above)
+curl -X PUT http://127.0.0.1:8765/api/v1/parameters/st_mic_mute \
+     -H 'Content-Type: application/json' -d '{"value": 1}'
+```
+
+## Disclaimer
+
+**BridgeMix is an independent, unofficial project.** It is **not affiliated with,
+authorized, maintained, sponsored, or endorsed by Roland Corporation**, or any of
+its subsidiaries or affiliates. "Roland" and "BRIDGE CAST" are trademarks of
+Roland Corporation, used here solely to identify the hardware this software
+interoperates with. The original BridgeMix project independently documented the
+device's MIDI SysEx protocol; this continuation builds on that work.
+
+The software is provided **"as is", without warranty of any kind**, express or
+implied (see the [LICENSE](LICENSE) for the full terms). Behaviour described here
+may not work on every platform, operating system, or device/firmware
+configuration. Interacting with your audio hardware is **at your own risk.**
+To the fullest extent permitted by applicable law, contributors disclaim
+liability for damage, data loss, or audio/device issues caused by using this
+software.
+
+### AI-assisted development
+
+All changes specific to this continuation — including the Linux PipeWire
+profile, sample-rate settings, packaging, diagnostics, and recent UI work — were
+developed with AI assistance. The repository also contains the original
+human-authored BridgeMix code from Ex0danify; it would be inaccurate to claim the
+entire application was generated by AI. The combined project remains
+GPL-3.0-or-later under the upstream license. AI-assisted changes may contain
+errors and should be reviewed before use with hardware.
+
+## License
+
+BridgeMix is licensed under the **GNU General Public License v3.0 or later**
+(GPL-3.0-or-later). See [LICENSE](LICENSE).

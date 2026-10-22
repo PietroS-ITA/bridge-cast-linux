@@ -1,0 +1,63 @@
+# Maintainer: PietroS-ITA
+pkgname=bridgemix-git
+pkgver=1.3.0.r0.g0000000
+pkgrel=1
+pkgdesc='Cross-platform controller and PipeWire profile for the Roland BRIDGE CAST'
+arch=('any')
+url='https://github.com/PietroS-ITA/bridge-cast-linux'
+license=('GPL3')
+depends=(
+  'python>=3.11'
+  'python-pyqt6'
+  'python-mido'
+  'python-rtmidi'
+  'python-sounddevice'
+  'python-numpy'
+  'python-packaging'
+  'portaudio'
+)
+makedepends=(
+  'git'
+  'python-build'
+  'python-installer'
+  'python-setuptools'
+  'python-wheel'
+)
+optdepends=(
+  'pipewire: PipeWire engine and pw-loopback for 96 kHz app endpoints'
+  'pipewire-pulse: pactl and PulseAudio-compatible endpoint discovery'
+  'alsa-ucm-conf: split BRIDGE CAST V2 stereo endpoints'
+)
+provides=('bridgemix')
+conflicts=('bridgemix')
+source=("bridge-cast-linux::git+https://github.com/PietroS-ITA/bridge-cast-linux.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/bridge-cast-linux"
+  local base commits short
+  base=$(sed -n 's/^__version__ = "\([0-9.]*\)"/\1/p' src/bridgemix/__init__.py)
+  commits=$(git rev-list --count HEAD)
+  short=$(git rev-parse --short HEAD)
+  printf '%s.r%s.g%s' "$base" "$commits" "$short"
+}
+
+build() {
+  cd "$srcdir/bridge-cast-linux"
+  python -m build --wheel --no-isolation
+}
+
+package() {
+  cd "$srcdir/bridge-cast-linux"
+
+  python -m installer --destdir="$pkgdir" dist/*.whl
+
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+  install -Dm644 assets/icon.svg \
+    "$pkgdir/usr/share/icons/hicolor/scalable/apps/io.github.ex0danify.BridgeMix.svg"
+
+  local desktop="$pkgdir/usr/share/applications/io.github.ex0danify.BridgeMix.desktop"
+  install -Dm644 assets/io.github.ex0danify.BridgeMix.desktop "$desktop"
+  sed -i 's|@LAUNCHER@|bridgemix|' "$desktop"
+}

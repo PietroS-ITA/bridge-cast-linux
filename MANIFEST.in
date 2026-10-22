@@ -1,0 +1,10 @@
+include CHANGELOG.md
+include LICENSE
+include README.md
+include setup.sh
+include setup.bat
+recursive-include assets *.desktop *.ico *.svg
+include doc/LINUX_96KHZ.md doc/PLUGINS.md doc/PROTOCOL.md
+recursive-include doc/screenshots *.png
+recursive-include packaging *
+recursive-include tools *.py *.ps1
